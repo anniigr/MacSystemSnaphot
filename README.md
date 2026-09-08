@@ -2,9 +2,9 @@
 
 A native macOS utility built with Swift and SwiftUI that captures and displays a point-in-time overview of the current Mac. System information is collected through standard Apple APIs with App Sandbox enabled.
 
-The project is being developed in four milestones. **Milestones 1–3 are implemented, with local execution confirmed on an Apple Silicon Mac.** Milestone 4 (automated tests and final review) is in progress. This README describes the completed Milestone 3 version; automated test results are not yet available.
+Built as a focused Swift and SwiftUI portfolio project, the app combines native system information access, a small MVVM architecture, local JSON history, and sandbox-compatible export. **All four implementation milestones are complete, and all 16 XCTest tests passed locally on a MacBook Air M3.**
 
-## Current features
+## Features
 
 - Device name and macOS version.
 - Processor architecture and active logical processor count.
@@ -22,12 +22,9 @@ The project is being developed in four milestones. **Milestones 1–3 are implem
 - Separate collection, persistence, and export errors with retry actions.
 - Failed refreshes preserve existing snapshots; failed saves retain changes in memory.
 - Unreadable history is not automatically overwritten.
+- 16 XCTest tests covering formatting, calculations, serialization, storage, and ViewModel recovery.
 
-Snapshots are collected on initial display and on demand. The app does not continuously monitor CPU load or memory usage. History is saved after successful captures. Export creates a separate copy of the selected snapshot.
-
-## Screenshots
-
-Screenshots for the first two milestones are embedded below. Add the history screenshot as `docs/screenshots/image-3.png` and the test-results screenshot as `docs/screenshots/image-4.png`, then uncomment the corresponding Markdown image reference.
+Snapshots are collected on initial display and on demand. The app does not continuously monitor CPU load or memory usage. After successful captures, the app attempts to save history; persistence failures are shown separately. Export creates a separate copy of the selected snapshot.
 
 ## Technologies
 
@@ -37,26 +34,26 @@ Screenshots for the first two milestones are embedded below. Add the history scr
 - Combine for `ObservableObject` and `@Published`
 - App Sandbox
 - AppKit and Uniform Type Identifiers for the native JSON export dialog
-- XCTest coverage in progress for Milestone 4
+- XCTest for automated tests
 
 No third-party packages, shell subprocesses, networking, or database are used.
 
 ## Architecture
 
-The application uses a small MVVM structure. `SystemSnapshot` is an immutable value model. `SystemInfoService` collects data, `SnapshotViewModel` coordinates captures, history, selection, and errors. `ContentView` renders the sidebar and page state; `SnapshotDetailView` renders the selected capture. The service is injected through `SystemInfoProviding` so that ViewModel behavior can later be tested with controlled inputs.
+The application uses a MVVM structure. `SystemSnapshot` is an immutable value model. `SystemInfoService` collects data, `SnapshotViewModel` coordinates captures, history, selection, and errors. `ContentView` renders the sidebar and page state; `SnapshotDetailView` renders the selected capture. The service is injected through `SystemInfoProviding` to test ViewModel behavior with controlled inputs. Storage is also injected through a protocol so tests can simulate read and write failures.
 
 `JSONSnapshotStore` implements `SnapshotStoring` and persists history under Application Support. `SnapshotJSON` centralizes serialization settings, and `SnapshotExporter` handles the native save dialog and export. `SnapshotHistory` limits and deduplicates records.
 
 `@StateObject` preserves the ViewModel at the app level. The view observes it through `@ObservedObject`; changes to its published history and selection trigger UI updates. The ViewModel is isolated to `@MainActor`.
 
-## Development roadmap
+## Development milestones
 
 | Milestone | Scope | Status |
 | --- | --- | --- |
 | 1 | Model, system service, ViewModel, basic interface, refresh | Implemented; local launch confirmed |
 | 2 | Refined interface, logical sections, storage visualization, error presentation | Implemented; local execution confirmed |
 | 3 | JSON persistence, last ten snapshots, history selection, JSON export | Implemented; local execution confirmed |
-| 4 | XCTest coverage, focused refactoring, final documentation and repository review | In progress; test execution pending |
+| 4 | XCTest coverage and final project documentation | Implemented; 16 tests passed locally |
 
 ### Milestone 1 — System collection and basic UI · Implemented
 
@@ -114,28 +111,12 @@ flowchart TD
     H -.->|Export failure| I
 ```
 
-<img width="812" height="602" alt="image-3" src="https://github.com/user-attachments/assets/24e9f4f2-fefe-4644-854c-4af557bc9bde" />
+<!-- Add docs/screenshots/image-3.png, then uncomment the image below. -->
+<!-- ![Snapshot history and selected snapshot](docs/screenshots/image-3.png) -->
 
-### Milestone 4 — Tests and repository preparation · In progress
+### Milestone 4 — Tests and repository preparation · Implemented
 
-In progress: add XCTest cases for memory and disk formatting, free-space calculations, JSON round trips, history limits, and ViewModel success and failure behavior using an injected test provider. Review error handling, naming, duplicated logic, repository contents, and documentation. Test execution and final verification are pending.
-
-```mermaid
-flowchart TD
-    A["Deterministic test inputs"] --> B["Formatting and percentage tests"]
-    A --> C["JSON and history-limit tests"]
-    A --> D["ViewModel tests with injected provider"]
-    B --> E{"Tests pass?"}
-    C --> E
-    D --> E
-    E -->|No| F["Fix failing behavior"]
-    F --> A
-    E -->|Yes| G["Manual UI and sandbox checks"]
-    G --> H["Finalize README and repository"]
-```
-
-<!-- Add docs/screenshots/image-4.png, then uncomment the image below. -->
-<!-- ![XCTest results for Mac System Snapshot](docs/screenshots/image-4.png) -->
+Implemented: 16 XCTest tests cover memory and disk formatting, free-space boundaries, JSON round trips, history limits, storage validation, and ViewModel success and recovery paths. Storage tests use unique temporary directories; ViewModel tests inject a controlled provider and an in-memory store. All 16 tests passed locally. Shared formatting, serialization, and history rules keep these behaviors independently testable.
 
 ## Requirements
 
@@ -143,7 +124,7 @@ flowchart TD
 - Xcode with the macOS SDK and support for the project's deployment target.
 - No external dependencies or paid services.
 
-Development and the initial local launch were performed on a MacBook Air M3. Intel and Rosetta execution have not been verified.
+Development, local application runs, and the XCTest run were performed on a MacBook Air M3. Intel and Rosetta execution have not been verified.
 
 ## Running the application
 
@@ -159,9 +140,22 @@ At launch, the app restores history and attempts a new capture. Use **Refresh** 
 
 ## Testing
 
-Automated coverage is being added in Milestone 4. The completed Milestone 3 version has been exercised manually; no passing XCTest results are claimed yet.
+**Latest local result: 16 tests passed.**
 
-Current manual checks:
+1. Open `MacSystemSnapshot.xcodeproj` in Xcode.
+2. Select the `MacSystemSnapshot` scheme and **My Mac**.
+3. Choose **Product > Test** or press **Command-U**.
+4. View results in the Test Navigator. The scheme's Test action must include `MacSystemSnapshotTests`.
+
+| Test suite | Tests | Coverage |
+| --- | ---: | --- |
+| `SnapshotLogicTests` | 7 | Binary memory units, decimal disk units and rounding, free-space boundaries, percentage formatting, JSON fields and timestamp encoding, history order and deduplication |
+| `SnapshotStoreTests` | 4 | Missing history, saving and reloading ten records, unchanged corrupt files, invalid disk values |
+| `SnapshotViewModelTests` | 5 | Initial load and capture, failed refresh, failed save and retry, failed load and recovery, history selection |
+
+`TestSupport.swift` provides fixed sample data, a controllable system-information provider, an in-memory store, and temporary-directory setup and cleanup. Storage tests do not use the app's real history directory. Native save-dialog behavior remains a manual check; the suite does not automate the UI or validate hardware readings on every Mac model.
+
+### Manual verification checklist
 
 - Launch with App Sandbox enabled.
 - Compare the device name, macOS version, and installed memory with the Mac's settings.
@@ -175,7 +169,6 @@ Current manual checks:
 - Select an older capture and export it; compare its ID and timestamp with the selected record.
 - Cancel export and confirm that no failure or success is reported.
 
-After adding the `MacSystemSnapshotTests` target in Milestone 4, select the app scheme and **My Mac**, then choose **Product > Test** or press **Command-U**. The intended coverage includes formatting, boundary calculations, JSON round trips, history retention, temporary-directory storage checks, and ViewModel failure/retry behavior. Native dialog behavior remains a manual check.
 
 ## Project structure
 
@@ -199,7 +192,16 @@ Source paths below are relative to the `MacSystemSnapshot` application directory
 | `PrivacyInfo.xcprivacy` | Declared reason for accessing disk-space APIs |
 | `Assets.xcassets` | App visual resources |
 
-The repository root contains `MacSystemSnapshot.xcodeproj`, `.gitignore`, and this README. Test files are being added in Milestone 4 under the separate `MacSystemSnapshotTests` directory.
+The repository root contains `MacSystemSnapshot.xcodeproj`, `.gitignore`, and this README. The separate `MacSystemSnapshotTests` directory contains:
+
+| File | Responsibility |
+| --- | --- |
+| `TestSupport.swift` | Fixtures, test dependencies, and temporary-directory helper |
+| `SnapshotLogicTests.swift` | Formatting, calculations, JSON, and history rules |
+| `SnapshotStoreTests.swift` | File-backed storage checks in isolated temporary directories |
+| `SnapshotViewModelTests.swift` | State transitions and failure/retry behavior |
+
+Screenshots may be stored under `docs/screenshots/`. Xcode configuration and entitlements belong in version control; build output and personal workspace state are excluded through `.gitignore`.
 
 ## Implementation notes
 
@@ -208,10 +210,10 @@ The repository root contains `MacSystemSnapshot.xcodeproj`, `.gitignore`, and th
 - **Storage scope:** disk values describe the filesystem containing the app's home directory. Available space uses `systemFreeSize` and may differ from Finder's estimate of available space including reclaimable storage.
 - **Architecture:** the service queries `hw.optional.arm64` through Darwin rather than relying only on the compiled process architecture.
 - **Error handling:** collection errors are propagated to the ViewModel. An unavailable device name uses `Unknown Mac`; unreadable or inconsistent disk information produces an error.
-- **Execution:** collection currently runs synchronously on the main actor. No directory scanning or background polling is performed.
+- **Execution:** collection and the small history-file operations run synchronously on the main actor. The export dialog is modal. No directory scanning or background polling is performed; larger datasets would warrant revisiting this choice.
 - **Derived values:** `availableDiskFraction` computes a value from 0 to 1, returning `nil` for invalid disk inputs. It is a computed property and is not included in synthesized Codable output.
 - **Serialization:** history is a JSON array; export is one JSON object. Dates use milliseconds since the Unix epoch. Both paths share the same codec settings.
 - **History ordering:** new captures are prepended. Deduplication preserves the first occurrence of each UUID, then keeps at most ten records; records are not sorted by the wall clock.
 - **Persistence:** internal data is stored at `MacSystemSnapshot/snapshots.json` beneath the sandbox’s Application Support directory, resolved through FileManager. Writes use `.atomic`.
-- **Recovery:** a missing history file means an empty history. Invalid JSON and other read failures remain visible errors. Retry save first reloads unread history and merges it with in-memory captures before writing.
+- **Recovery:** a missing history file means an empty history. Invalid JSON and other read failures remain visible errors. Retry save first reloads unread history and merges it with in-memory captures before writing. In-memory captures take priority, and the merged history is still limited to ten records.
 - **Export:** only the user-selected destination is written. Canceling the save dialog is treated as cancellation, not an error. No persistent access bookmark is needed for a one-time export.
