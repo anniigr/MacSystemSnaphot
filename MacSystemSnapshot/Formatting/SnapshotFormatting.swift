@@ -43,4 +43,8 @@ enum SnapshotFormatting {
             time: .standard
         )
     }
+    static func percentage(_ value: Double, locale: Locale = .current) -> String {
+        value.formatted(.percent.precision(.fractionLength(0...1))
+            .locale(locale))
+    }
 }

@@ -11,134 +11,117 @@ struct ContentView: View {
     @ObservedObject var viewModel: SnapshotViewModel
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Mac System Snapshot")
-                        .font(.title2.bold())
+        ScrollView {
+            VStack(alignment: .leading, spacing: 24) {
+                pageHeader
 
-                    Text("A snapshot of your Mac's system information.")
-                        .foregroundStyle(.secondary)
+                if let errorMessage = viewModel.errorMessage {
+                    errorBanner(errorMessage)
                 }
 
-                Spacer()
-
+                if let snapshot = viewModel.snapshot {
+                    SnapshotDetailView(snapshot: snapshot)
+                } else {
+                    emptyState
+                }
+            }
+            .frame(maxWidth: 900, alignment: .leading)
+            .padding(24)
+            .frame(maxWidth: .infinity, alignment: .top)
+        }
+        .frame(
+            minWidth: 600,
+            maxWidth: .infinity,
+            minHeight: 520,
+            maxHeight: .infinity
+        )
+        .background(Color(nsColor: .windowBackgroundColor))
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
                 Button {
                     viewModel.refreshSnapshot()
                 } label: {
                     Label("Refresh", systemImage: "arrow.clockwise")
                 }
                 .keyboardShortcut("r", modifiers: .command)
-            }
-
-            Divider()
-
-            ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
-                    if let errorMessage = viewModel.errorMessage {
-                        Label {
-                            Text(errorMessage)
-                                .textSelection(.enabled)
-                        } icon: {
-                            Image(systemName: "exclamationmark.triangle")
-                        }
-                        .foregroundStyle(.red)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-
-                    if let snapshot = viewModel.snapshot {
-                        snapshotDetails(snapshot)
-                    } else {
-                        Text("No snapshot available. Click Refresh to try again.")
-                            .foregroundStyle(.secondary)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .help("Capture a new system snapshot (Command-R)")
             }
         }
-        .padding(24)
-        .frame(
-            minWidth: 560,
-            maxWidth: .infinity,
-            minHeight: 420,
-            maxHeight: .infinity,
-            alignment: .topLeading
-        )
         .task {
             viewModel.loadIfNeeded()
         }
     }
 
-    private func snapshotDetails(
-        _ snapshot: SystemSnapshot
-    ) -> some View {
-        VStack(alignment: .leading, spacing: 14) {
-            infoRow("Device name", value: snapshot.deviceName)
+    private var pageHeader: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("System overview")
+                .font(.largeTitle.weight(.bold))
 
-            infoRow(
-                "macOS version",
-                value: snapshot.macOSVersion
-            )
-
-            infoRow(
-                "Processor architecture",
-                value: snapshot.processorArchitecture
-            )
-
-            infoRow(
-                "Active processors",
-                value: String(snapshot.activeProccessorCount)
-            )
-
-            infoRow(
-                "Physical memory",
-                value: SnapshotFormatting.memory(
-                    snapshot.physicalMemoryBytes
-                )
-            )
-
-            infoRow(
-                "Total disk space",
-                value: SnapshotFormatting.disk(
-                    snapshot.totalDiskBytes
-                )
-            )
-
-            infoRow(
-                "Available disk space",
-                value: SnapshotFormatting.disk(
-                    snapshot.availableDiskBytes
-                )
-            )
-
-            Divider()
-
-            infoRow(
-                "Last refreshed",
-                value: SnapshotFormatting.timestamp(
-                    snapshot.capturedAt
-                )
-            )
-
-            Text("Disk values describe the volume containing the app's home directory.")
-                .font(.caption)
+            Text("Your Mac's configuration and available storage.")
+                .font(.subheadline)
                 .foregroundStyle(.secondary)
         }
     }
 
-    private func infoRow(
-        _ title: String,
-        value: String
-    ) -> some View {
-        HStack(alignment: .top, spacing: 20) {
-            Text(title)
-                .foregroundStyle(.secondary)
-                .frame(width: 170, alignment: .leading)
+    private var emptyState: some View {
+        ContentUnavailableView {
+            Label(
+                "No snapshot available",
+                systemImage: "desktopcomputer"
+            )
+        } description: {
+            Text(
+                "Use Refresh to collect system information "
+                + "from this Mac."
+            )
+        } actions: {
+            Button("Refresh") {
+                viewModel.refreshSnapshot()
+            }
+            .buttonStyle(.borderedProminent)
+        }
+        .frame(maxWidth: .infinity, minHeight: 260)
+    }
 
-            Text(value)
-                .textSelection(.enabled)
-                .frame(maxWidth: .infinity, alignment: .leading)
+    private func errorBanner(_ message: String) -> some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .foregroundStyle(.orange)
+                .font(.title3)
+                .accessibilityHidden(true)
+
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Could not refresh")
+                    .font(.headline)
+
+                Text(message)
+                    .font(.callout)
+                    .textSelection(.enabled)
+
+                if viewModel.snapshot != nil {
+                    Text("Showing the last successful snapshot.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+            Button("Retry") {
+                viewModel.refreshSnapshot()
+            }
+            .buttonStyle(.bordered)
+        }
+        .padding(16)
+        .background(
+            Color.orange.opacity(0.10),
+            in: RoundedRectangle(cornerRadius: 12)
+        )
+        .overlay {
+            RoundedRectangle(cornerRadius: 12)
+                .strokeBorder(
+                    Color.orange.opacity(0.25),
+                    lineWidth: 1
+                )
         }
     }
 }

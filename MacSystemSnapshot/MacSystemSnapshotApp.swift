@@ -17,6 +17,6 @@ struct MacSystemSnapshotApp: App {
         Window("Mac System Snapshot", id: "main") {
             ContentView(viewModel: viewModel)
         }
-        .defaultSize(width: 680, height: 480)
+        .defaultSize(width: 820, height: 680)
     }
 }
