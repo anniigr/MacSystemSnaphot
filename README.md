@@ -67,6 +67,8 @@ flowchart TD
     F --> H["ContentView updates"]
     G --> H
 ```
+<img width="672" height="574" alt="image-1" src="https://github.com/user-attachments/assets/6d012e32-ddad-4153-9524-28ca1662528f" />
+
 
 ### Milestone 2 — Interface refinement · Implemented
 
