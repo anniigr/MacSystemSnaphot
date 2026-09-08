@@ -21,7 +21,7 @@ struct SystemSnapshot: Codable, Identifiable,Equatable {
     let availableDiskBytes: UInt64
     
     var availableDiskFraction: Double? {
-        guard availableDiskBytes > 0, availableDiskBytes <= totalDiskBytes else {
+        guard totalDiskBytes > 0, availableDiskBytes <= totalDiskBytes else {
             return nil
         }
         return Double(availableDiskBytes) / Double(totalDiskBytes)

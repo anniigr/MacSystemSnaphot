@@ -6,8 +6,19 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXContainerItemProxy section */
+		59BFC8F13050664F00955AA4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 59BFC844304EC6C500955AA4 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 59BFC84B304EC6C500955AA4;
+			remoteInfo = MacSystemSnapshot;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		59BFC84C304EC6C500955AA4 /* MacSystemSnapshot.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MacSystemSnapshot.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		59BFC8ED3050664F00955AA4 /* MacSystemSnapshotTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MacSystemSnapshotTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -16,10 +27,22 @@
 			path = MacSystemSnapshot;
 			sourceTree = "<group>";
 		};
+		59BFC8EE3050664F00955AA4 /* MacSystemSnapshotTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = MacSystemSnapshotTests;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		59BFC849304EC6C500955AA4 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		59BFC8EA3050664F00955AA4 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -33,6 +56,7 @@
 			isa = PBXGroup;
 			children = (
 				59BFC84E304EC6C500955AA4 /* MacSystemSnapshot */,
+				59BFC8EE3050664F00955AA4 /* MacSystemSnapshotTests */,
 				59BFC84D304EC6C500955AA4 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -41,6 +65,7 @@
 			isa = PBXGroup;
 			children = (
 				59BFC84C304EC6C500955AA4 /* MacSystemSnapshot.app */,
+				59BFC8ED3050664F00955AA4 /* MacSystemSnapshotTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -70,6 +95,29 @@
 			productReference = 59BFC84C304EC6C500955AA4 /* MacSystemSnapshot.app */;
 			productType = "com.apple.product-type.application";
 		};
+		59BFC8EC3050664F00955AA4 /* MacSystemSnapshotTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 59BFC8F33050664F00955AA4 /* Build configuration list for PBXNativeTarget "MacSystemSnapshotTests" */;
+			buildPhases = (
+				59BFC8E93050664F00955AA4 /* Sources */,
+				59BFC8EA3050664F00955AA4 /* Frameworks */,
+				59BFC8EB3050664F00955AA4 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				59BFC8F23050664F00955AA4 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				59BFC8EE3050664F00955AA4 /* MacSystemSnapshotTests */,
+			);
+			name = MacSystemSnapshotTests;
+			packageProductDependencies = (
+			);
+			productName = MacSystemSnapshotTests;
+			productReference = 59BFC8ED3050664F00955AA4 /* MacSystemSnapshotTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -82,6 +130,10 @@
 				TargetAttributes = {
 					59BFC84B304EC6C500955AA4 = {
 						CreatedOnToolsVersion = 26.0.1;
+					};
+					59BFC8EC3050664F00955AA4 = {
+						CreatedOnToolsVersion = 26.0.1;
+						TestTargetID = 59BFC84B304EC6C500955AA4;
 					};
 				};
 			};
@@ -100,12 +152,20 @@
 			projectRoot = "";
 			targets = (
 				59BFC84B304EC6C500955AA4 /* MacSystemSnapshot */,
+				59BFC8EC3050664F00955AA4 /* MacSystemSnapshotTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		59BFC84A304EC6C500955AA4 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		59BFC8EB3050664F00955AA4 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -122,7 +182,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		59BFC8E93050664F00955AA4 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		59BFC8F23050664F00955AA4 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 59BFC84B304EC6C500955AA4 /* MacSystemSnapshot */;
+			targetProxy = 59BFC8F13050664F00955AA4 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		59BFC855304EC6C600955AA4 /* Debug */ = {
@@ -325,6 +400,44 @@
 			};
 			name = Release;
 		};
+		59BFC8F43050664F00955AA4 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.annagranos.MacSystemSnapshotTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/MacSystemSnapshot.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/MacSystemSnapshot";
+			};
+			name = Debug;
+		};
+		59BFC8F53050664F00955AA4 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.annagranos.MacSystemSnapshotTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/MacSystemSnapshot.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/MacSystemSnapshot";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -342,6 +455,15 @@
 			buildConfigurations = (
 				59BFC858304EC6C600955AA4 /* Debug */,
 				59BFC859304EC6C600955AA4 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		59BFC8F33050664F00955AA4 /* Build configuration list for PBXNativeTarget "MacSystemSnapshotTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				59BFC8F43050664F00955AA4 /* Debug */,
+				59BFC8F53050664F00955AA4 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
