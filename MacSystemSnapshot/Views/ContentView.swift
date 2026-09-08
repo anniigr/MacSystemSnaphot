@@ -4,22 +4,155 @@
 //
 //  Created by Anna Granos on 07/09/2026.
 //
-
 import SwiftUI
 
 struct ContentView: View {
     @ObservedObject var viewModel: SnapshotViewModel
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 24) {
-                pageHeader
+        NavigationSplitView {
+            historySidebar
+                .navigationSplitViewColumnWidth(
+                    min: 220,
+                    ideal: 250,
+                    max: 300
+                )
+        } detail: {
+            detailContent
+        }
+        .frame(
+            minWidth: 820,
+            maxWidth: .infinity,
+            minHeight: 560,
+            maxHeight: .infinity
+        )
+        .toolbar {
+            ToolbarItemGroup(placement: .primaryAction) {
+                Button {
+                    viewModel.refresh()
+                } label: {
+                    Label("Refresh", systemImage: "arrow.clockwise")
+                }
+                .keyboardShortcut("r", modifiers: .command)
+                .help("Capture and save a new snapshot")
 
-                if let errorMessage = viewModel.errorMessage {
-                    errorBanner(errorMessage)
+                Button {
+                    viewModel.exportSelectedSnapshot()
+                } label: {
+                    Label("Export", systemImage: "square.and.arrow.up")
+                }
+                .keyboardShortcut("e", modifiers: .command)
+                .disabled(viewModel.selectedSnapshot == nil)
+                .help("Export the selected snapshot as JSON")
+            }
+        }
+        .task {
+            viewModel.loadIfNeeded()
+        }
+    }
+
+    private var historySidebar: some View {
+        VStack(spacing: 0) {
+            HStack {
+                Text("History")
+                    .font(.headline)
+
+                Spacer()
+
+                Text(
+                    "\(viewModel.snapshots.count)/\(SnapshotHistory.maximumCount)"
+                )
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            }
+            .padding(16)
+
+            List(selection: $viewModel.selectedSnapshotID) {
+                ForEach(viewModel.snapshots) { snapshot in
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(
+                            SnapshotFormatting.timestamp(
+                                snapshot.capturedAt
+                            )
+                        )
+                        .font(.callout.weight(.medium))
+                        .lineLimit(2)
+
+                        Text(
+                            "\(SnapshotFormatting.disk(snapshot.availableDiskBytes)) available"
+                        )
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    }
+                    .padding(.vertical, 6)
+                    .tag(snapshot.id)
+                }
+            }
+            .listStyle(.sidebar)
+            .overlay {
+                if viewModel.snapshots.isEmpty {
+                    Text("No snapshots yet")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                }
+            }
+
+            Text("Latest ten captures, newest first.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .padding(12)
+        }
+    }
+
+    private var detailContent: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 20) {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Snapshot details")
+                        .font(.largeTitle.weight(.bold))
+
+                    Text("Select a capture from history or create a new one.")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
                 }
 
-                if let snapshot = viewModel.snapshot {
+                if let message = viewModel.refreshErrorMessage {
+                    errorBanner(
+                        "Could not refresh",
+                        message: message,
+                        buttonTitle: "Retry"
+                    ) {
+                        viewModel.refresh()
+                    }
+                }
+
+                if let message = viewModel.persistenceErrorMessage {
+                    errorBanner(
+                        "History needs attention",
+                        message: message,
+                        buttonTitle: "Retry save"
+                    ) {
+                        viewModel.retrySavingHistory()
+                    }
+                }
+
+                if let message = viewModel.exportErrorMessage {
+                    errorBanner(
+                        "Could not export",
+                        message: message,
+                        buttonTitle: "Retry export"
+                    ) {
+                        viewModel.exportSelectedSnapshot()
+                    }
+                }
+
+                if let message = viewModel.exportMessage {
+                    Label(message, systemImage: "checkmark.circle")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                }
+
+                if let snapshot = viewModel.selectedSnapshot {
                     SnapshotDetailView(snapshot: snapshot)
                 } else {
                     emptyState
@@ -29,88 +162,48 @@ struct ContentView: View {
             .padding(24)
             .frame(maxWidth: .infinity, alignment: .top)
         }
-        .frame(
-            minWidth: 600,
-            maxWidth: .infinity,
-            minHeight: 520,
-            maxHeight: .infinity
-        )
+        .frame(minWidth: 540)
         .background(Color(nsColor: .windowBackgroundColor))
-        .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                Button {
-                    viewModel.refreshSnapshot()
-                } label: {
-                    Label("Refresh", systemImage: "arrow.clockwise")
-                }
-                .keyboardShortcut("r", modifiers: .command)
-                .help("Capture a new system snapshot (Command-R)")
-            }
-        }
-        .task {
-            viewModel.loadIfNeeded()
-        }
-    }
-
-    private var pageHeader: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text("System overview")
-                .font(.largeTitle.weight(.bold))
-
-            Text("Your Mac's configuration and available storage.")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-        }
     }
 
     private var emptyState: some View {
         ContentUnavailableView {
             Label(
-                "No snapshot available",
+                "No snapshot selected",
                 systemImage: "desktopcomputer"
             )
         } description: {
-            Text(
-                "Use Refresh to collect system information "
-                + "from this Mac."
-            )
+            Text("Select a saved capture or use Refresh to create one.")
         } actions: {
             Button("Refresh") {
-                viewModel.refreshSnapshot()
+                viewModel.refresh()
             }
             .buttonStyle(.borderedProminent)
         }
         .frame(maxWidth: .infinity, minHeight: 260)
     }
 
-    private func errorBanner(_ message: String) -> some View {
-        HStack(alignment: .top, spacing: 12) {
-            Image(systemName: "exclamationmark.triangle.fill")
-                .foregroundStyle(.orange)
-                .font(.title3)
-                .accessibilityHidden(true)
+    private func errorBanner(
+        _ title: String,
+        message: String,
+        buttonTitle: String,
+        action: @escaping () -> Void
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Label(
+                title,
+                systemImage: "exclamationmark.triangle.fill"
+            )
+            .font(.headline)
 
-            VStack(alignment: .leading, spacing: 6) {
-                Text("Could not refresh")
-                    .font(.headline)
+            Text(message)
+                .font(.callout)
+                .textSelection(.enabled)
 
-                Text(message)
-                    .font(.callout)
-                    .textSelection(.enabled)
-
-                if viewModel.snapshot != nil {
-                    Text("Showing the last successful snapshot.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-
-            Button("Retry") {
-                viewModel.refreshSnapshot()
-            }
-            .buttonStyle(.bordered)
+            Button(buttonTitle, action: action)
+                .buttonStyle(.bordered)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
         .background(
             Color.orange.opacity(0.10),

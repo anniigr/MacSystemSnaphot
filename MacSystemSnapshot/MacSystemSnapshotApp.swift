@@ -10,7 +10,9 @@ import SwiftUI
 @main
 struct MacSystemSnapshotApp: App {
     @StateObject private var viewModel = SnapshotViewModel(
-        provider: SystemInfoService()
+        provider: SystemInfoService(),
+        store: JSONSnapshotStore(),
+        exporter: SnapshotExporter()
     )
 
     var body: some Scene {
