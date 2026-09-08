@@ -2,7 +2,7 @@
 
 A native macOS utility built with Swift and SwiftUI that captures and displays a point-in-time overview of the current Mac. System information is collected through standard Apple APIs with App Sandbox enabled.
 
-The project is being developed in four milestones. **Milestone 1 is implemented and has been run locally on an Apple Silicon Mac.** Interface refinement, persistent history, JSON export, and automated tests are planned.
+The project is being developed in four milestones. **Milestones 1 and 2 are implemented, with local execution confirmed on an Apple Silicon Mac.** Milestone 3 (history and export) is in progress; automated tests remain planned. The features below describe the completed Milestone 2 version.
 
 ## Current features
 
@@ -12,14 +12,19 @@ The project is being developed in four milestones. **Milestone 1 is implemented 
 - Total and available space on the volume containing the app's home directory.
 - Timestamp of the last successful refresh.
 - Manual refresh using the Refresh button or Command-R while the app is focused.
-- Basic SwiftUI interface with selectable values, scrolling, and a minimum window size.
+- Refined SwiftUI interface with System, Memory, and Storage sections.
+- Adaptive card layout, selectable values, scrolling, and a minimum window size.
+- Available disk percentage and a visual availability indicator.
+- Native refresh toolbar, empty state, and an error banner with Retry.
 - Visible collection errors; an unsuccessful refresh preserves the previous successful snapshot.
 
 Snapshots are collected on initial display and on demand. The app does not continuously monitor CPU load or memory usage. History and export are not available in the current milestone.
 
 ## Screenshots
 
-Screenshots are not included yet. A screenshot of the refined interface is planned for Milestone 2.
+Each milestone below has a reserved screenshot path. Screenshots are added as milestones are documented. Image references are commented out until their files are committed, so unfinished milestones do not display broken images.
+
+Store screenshots as PNG files in `docs/screenshots/`, using `image-1.png` through `image-4.png`. Once a file is present, remove the HTML comment markers around its Markdown image reference below.
 
 ## Technologies
 
@@ -43,11 +48,11 @@ The application uses a small MVVM structure. `SystemSnapshot` is an immutable va
 | Milestone | Scope | Status |
 | --- | --- | --- |
 | 1 | Model, system service, ViewModel, basic interface, refresh | Implemented; local launch confirmed |
-| 2 | Refined interface, logical sections, storage visualization, error presentation | Planned |
-| 3 | JSON persistence, last ten snapshots, history selection, JSON export | Planned |
+| 2 | Refined interface, logical sections, storage visualization, error presentation | Implemented; local execution confirmed |
+| 3 | JSON persistence, last ten snapshots, history selection, JSON export | In progress |
 | 4 | XCTest coverage, focused refactoring, final documentation and repository review | Planned |
 
-### Milestone 1 — System collection and basic UI
+### Milestone 1 — System collection and basic UI · Implemented
 
 Implemented flow: an initial load or manual refresh requests a new snapshot. Collection failures are displayed without discarding the previous result.
 
@@ -63,9 +68,9 @@ flowchart TD
     G --> H
 ```
 
-### Milestone 2 — Interface refinement
+### Milestone 2 — Interface refinement · Implemented
 
-Planned: group related values into consistent sections, refine spacing and typography, display disk availability with a calculated percentage, and improve empty and error states. Check the layout at different window sizes and in light and dark appearance. Add a loading indicator only if an asynchronous operation makes it useful.
+Implemented: System, Memory, and Storage sections; adaptive cards; consistent spacing and typography; disk availability with a calculated percentage; a native refresh toolbar; and dedicated empty and error states. `SnapshotDetailView` displays a snapshot independently of collection logic. System colors support light and dark appearance. No loading spinner is used for the current synchronous collection operation.
 
 ```mermaid
 flowchart TD
@@ -78,10 +83,12 @@ flowchart TD
     D --> G
     F --> G
 ```
+<img width="1048" height="819" alt="image-2" src="https://github.com/user-attachments/assets/1e16e18f-0a78-49fd-8173-3b1e2fe0bb17" />
 
-### Milestone 3 — History and JSON export
 
-Planned: load and save history in the sandbox container's Application Support directory, retain the latest ten snapshots, and allow selection of previous records. Export the selected snapshot through a standard system file dialog. Handle reading, writing, and export errors separately; a failed save must not be reported as successful persistence.
+### Milestone 3 — History and JSON export · In progress
+
+Implementation underway: load and save history in the sandbox container's Application Support directory, retain the latest ten snapshots, and allow selection of previous records. Export the selected snapshot through a standard system file dialog. Handle reading, writing, and export errors separately; a failed save must not be reported as successful persistence.
 
 ```mermaid
 flowchart TD
@@ -97,7 +104,8 @@ flowchart TD
     H -.->|Export failure| I
 ```
 
-### Milestone 4 — Tests and repository preparation
+
+### Milestone 4 — Tests and repository preparation · Planned
 
 Planned: add XCTest cases for memory and disk formatting, free-space calculations, JSON round trips, history limits, and ViewModel success and failure behavior using an injected test provider. Review error handling, naming, duplicated logic, repository contents, and documentation.
 
@@ -114,6 +122,7 @@ flowchart TD
     E -->|Yes| G["Manual UI and sandbox checks"]
     G --> H["Finalize README and repository"]
 ```
+
 
 ## Requirements
 
@@ -144,7 +153,9 @@ Current manual checks:
 - Compare the device name, macOS version, and installed memory with the Mac's settings.
 - Confirm that disk values are nonnegative and available space does not exceed total space.
 - Refresh after a few seconds and check that the timestamp changes.
-- Resize the window and check that values remain readable.
+- Resize the window and check that cards switch between one and two columns.
+- Check light and dark appearance.
+- Compare the available percentage with available bytes divided by total bytes.
 
 Once the XCTest target is implemented, tests will be run using **Product > Test** or **Command-U** in Xcode.
 
@@ -159,8 +170,9 @@ Source paths below are relative to the `MacSystemSnapshot` application directory
 | `Services/SystemInfoProviding.swift` | System-information provider contract |
 | `Services/SystemInfoService.swift` | Foundation and Darwin API access; collection errors |
 | `ViewModels/SnapshotViewModel.swift` | Observable snapshot state and refresh coordination |
-| `Formatting/SnapshotFormatting.swift` | Memory, disk, and timestamp display formatting |
-| `Views/ContentView.swift` | Basic system-information interface |
+| `Formatting/SnapshotFormatting.swift` | Memory, disk, percentage, and timestamp formatting |
+| `Views/ContentView.swift` | Page composition, toolbar, empty and error states |
+| `Views/SnapshotDetailView.swift` | Device header, adaptive system and memory cards, storage indicator |
 | `PrivacyInfo.xcprivacy` | Declared reason for accessing disk-space APIs |
 | `Assets.xcassets` | App visual resources |
 
@@ -174,4 +186,5 @@ The repository root contains `MacSystemSnapshot.xcodeproj`, `.gitignore`, and th
 - **Architecture:** the service queries `hw.optional.arm64` through Darwin rather than relying only on the compiled process architecture.
 - **Error handling:** collection errors are propagated to the ViewModel. An unavailable device name uses `Unknown Mac`; unreadable or inconsistent disk information produces an error.
 - **Execution:** collection currently runs synchronously on the main actor. No directory scanning or background polling is performed.
+- **Derived values:** `availableDiskFraction` computes a value from 0 to 1, returning `nil` for invalid disk inputs. It is a computed property and is not included in synthesized Codable output.
 - **Serialization:** the model already conforms to `Codable`; file persistence and export remain planned work.
